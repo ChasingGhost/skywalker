@@ -1,2 +1,0 @@
-# skywalker
-Project Delta
