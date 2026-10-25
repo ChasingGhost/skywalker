@@ -1,0 +1,14 @@
+{
+  "name": "Skywalker Light Meter",
+  "short_name": "Light Meter",
+  "description": "Free light meter: lux, foot-candles, EV and camera exposure settings.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111318",
+  "theme_color": "#111318",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

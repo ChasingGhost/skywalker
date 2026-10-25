@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#111318"/>
+  <path d="M96 340 A160 160 0 0 1 416 340" fill="none" stroke="#2f3440" stroke-width="36" stroke-linecap="round"/>
+  <path d="M96 340 A160 160 0 0 1 340 202" fill="none" stroke="#ffb020" stroke-width="36" stroke-linecap="round"/>
+  <circle cx="256" cy="300" r="56" fill="#ffb020"/>
+  <g stroke="#ffb020" stroke-width="16" stroke-linecap="round">
+    <line x1="256" y1="196" x2="256" y2="216"/>
+    <line x1="168" y1="300" x2="188" y2="300"/>
+    <line x1="324" y1="300" x2="344" y2="300"/>
+    <line x1="194" y1="238" x2="208" y2="252"/>
+    <line x1="318" y1="238" x2="304" y2="252"/>
+  </g>
+  <text x="256" y="440" font-family="system-ui, sans-serif" font-size="64" font-weight="700" fill="#eef0f4" text-anchor="middle">LUX</text>
+</svg>

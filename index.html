@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111318">
+  <meta name="description" content="Free light meter: lux, foot-candles, EV and camera exposure settings.">
+  <title>Skywalker Light Meter</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Skywalker <span>Light Meter</span></h1>
+    <span id="sourceBadge" class="badge badge-off">Not measuring</span>
+  </header>
+
+  <main>
+    <!-- METER -->
+    <section id="tab-meter" class="tab active">
+      <div class="gauge-wrap">
+        <canvas id="gauge" width="300" height="180" aria-hidden="true"></canvas>
+        <div class="readout">
+          <div id="mainValue" class="value">--</div>
+          <div id="mainUnit" class="unit">lux</div>
+        </div>
+      </div>
+
+      <div class="sub-readouts">
+        <div><span class="label">EV₁₀₀</span><span id="evValue">--</span></div>
+        <div><span class="label" id="altLabel">foot-candles</span><span id="altValue">--</span></div>
+        <div><span class="label">Level</span><span id="levelValue">--</span></div>
+      </div>
+
+      <div class="stats">
+        <div><span class="label">Min</span><span id="minValue">--</span></div>
+        <div><span class="label">Avg</span><span id="avgValue">--</span></div>
+        <div><span class="label">Max</span><span id="maxValue">--</span></div>
+      </div>
+
+      <canvas id="history" width="600" height="120" aria-label="Recent readings chart"></canvas>
+
+      <div class="controls">
+        <button id="startBtn" class="primary">Start</button>
+        <button id="holdBtn" disabled>Hold</button>
+        <button id="resetBtn">Reset stats</button>
+        <button id="saveBtn" disabled>Save reading</button>
+      </div>
+
+      <div class="row">
+        <label class="seg">
+          <span>Metering</span>
+          <select id="meterMode">
+            <option value="average">Average (whole frame)</option>
+            <option value="spot">Spot (center)</option>
+          </select>
+        </label>
+        <label class="seg">
+          <span>Camera</span>
+          <select id="facing">
+            <option value="environment">Back</option>
+            <option value="user">Front (point at light)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="preview-wrap">
+        <video id="video" playsinline muted></video>
+        <div id="spotRing" class="spot-ring hidden"></div>
+      </div>
+
+      <p id="hint" class="hint">Tap <b>Start</b>. The app uses your phone's light sensor if it can, and the camera if not. For the most accurate number, calibrate it once in Settings.</p>
+    </section>
+
+    <!-- EXPOSURE -->
+    <section id="tab-exposure" class="tab">
+      <h2>Exposure calculator</h2>
+      <div class="ev-source">
+        <label><input type="checkbox" id="evManualToggle"> Enter EV by hand</label>
+        <input type="number" id="evManual" step="0.1" value="12" disabled>
+        <div class="ev-now">Using EV₁₀₀: <b id="evUsed">--</b></div>
+      </div>
+
+      <div class="grid2">
+        <label>ISO
+          <select id="iso"></select>
+        </label>
+        <label>Mode
+          <select id="expMode">
+            <option value="aperture">Aperture priority</option>
+            <option value="shutter">Shutter priority</option>
+          </select>
+        </label>
+        <label id="apertureWrap">Aperture
+          <select id="aperture"></select>
+        </label>
+        <label id="shutterWrap" class="hidden">Shutter
+          <select id="shutter"></select>
+        </label>
+        <label>ND filter (stops)
+          <select id="nd"></select>
+        </label>
+        <label>Compensation (stops)
+          <input type="number" id="comp" step="0.3" value="0">
+        </label>
+      </div>
+
+      <div class="result-card">
+        <div class="label">Set your camera to</div>
+        <div id="expResult" class="exp-result">--</div>
+        <div id="expWarn" class="warn"></div>
+      </div>
+
+      <h3>Equivalent exposures</h3>
+      <table class="equiv">
+        <thead><tr><th>Aperture</th><th>Shutter</th></tr></thead>
+        <tbody id="equivBody"></tbody>
+      </table>
+    </section>
+
+    <!-- GUIDE -->
+    <section id="tab-guide" class="tab">
+      <h2>Light level guide</h2>
+      <label class="seg wide">
+        <span>Check the current reading for</span>
+        <select id="guidePreset"></select>
+      </label>
+      <div id="guideVerdict" class="verdict">Start the meter to compare.</div>
+      <table class="guide">
+        <thead><tr><th>Setting</th><th>Recommended lux</th></tr></thead>
+        <tbody id="guideBody"></tbody>
+      </table>
+    </section>
+
+    <!-- LOG -->
+    <section id="tab-log" class="tab">
+      <h2>Saved readings</h2>
+      <div class="controls">
+        <button id="exportBtn">Export CSV</button>
+        <button id="clearLogBtn" class="danger">Clear all</button>
+      </div>
+      <ul id="logList" class="log"></ul>
+      <p id="logEmpty" class="hint">No saved readings yet. Tap <b>Save reading</b> on the Meter tab.</p>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="tab">
+      <h2>Settings</h2>
+      <label class="seg wide">
+        <span>Main unit</span>
+        <select id="unit">
+          <option value="lux">Lux (lx)</option>
+          <option value="fc">Foot-candles (fc)</option>
+        </select>
+      </label>
+      <label class="seg wide">
+        <span>Smoothing</span>
+        <select id="smoothing">
+          <option value="0.6">Fast</option>
+          <option value="0.3" selected>Normal</option>
+          <option value="0.1">Steady</option>
+        </select>
+      </label>
+      <label class="seg wide">
+        <span>Light source</span>
+        <select id="sourcePref">
+          <option value="auto">Automatic (sensor, then camera)</option>
+          <option value="camera">Camera only</option>
+          <option value="sensor">Light sensor only</option>
+        </select>
+      </label>
+      <label class="seg wide">
+        <span>Keep screen on while measuring</span>
+        <select id="wake">
+          <option value="on">On</option>
+          <option value="off">Off</option>
+        </select>
+      </label>
+
+      <h3>Calibration</h3>
+      <p class="hint">Phone cameras vary. Hold your phone next to a trusted meter (or in light whose lux you know), enter that value and tap Calibrate. The correction is saved on this device.</p>
+      <div class="calib">
+        <input type="number" id="calibLux" min="0.1" step="any" placeholder="Known lux, e.g. 500">
+        <button id="calibBtn">Calibrate</button>
+        <button id="calibReset">Reset</button>
+      </div>
+      <div class="calib-row">
+        <label>Correction (stops)
+          <input type="number" id="calibOffset" step="0.1" value="0">
+        </label>
+      </div>
+      <p id="calibStatus" class="hint"></p>
+      <p class="hint small">Free, with no ads, no account and no subscription. Your readings stay on your device.</p>
+    </section>
+  </main>
+
+  <nav class="tabs" role="tablist">
+    <button data-tab="meter" class="active">Meter</button>
+    <button data-tab="exposure">Exposure</button>
+    <button data-tab="guide">Guide</button>
+    <button data-tab="log">Log</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+
+  <canvas id="sample" width="64" height="48" hidden></canvas>
+  <script src="app.js"></script>
+</body>
+</html>
